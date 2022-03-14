@@ -1,8 +1,8 @@
-# Project title (2021 Fall DM)
+# Final Project For INFSCI 2160 Course
 Reproducing the orignal paper - <em>Learning Similarity Metrics for Event Identification in Social Media</em>.
 
 * Team members: Chenkai Zhao, Ziqian Wu, Ming Gao, Youyang Feng
-* Project paper: https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/original%20paper.pdf
+* Project paper: https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/Reports/2160%20Final%20Project_404NotFound.pdf
 * Original paper: https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/original%20paper.pdf
 
 To view the dataset, click [here](https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/data.zip)
