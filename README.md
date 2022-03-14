@@ -4,7 +4,7 @@ Reproducing the orignal paper - <em>Learning Similarity Metrics for Event Identi
 * Team members: Chenkai Zhao, Ziqian Wu, Ming Gao, Youyang Feng
 * Project paper: 
 
-To view the dataset, click [here](https://github.com/class-data-mining-master/2021-fall-dm-project-404notfound/blob/yyf/upcoming-wsdm10.txt)
+To view the dataset, click [here](https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/data.zip)
 
 ## Description
 
