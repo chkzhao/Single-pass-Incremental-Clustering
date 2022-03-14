@@ -2,7 +2,8 @@
 Reproducing the orignal paper - <em>Learning Similarity Metrics for Event Identification in Social Media</em>.
 
 * Team members: Chenkai Zhao, Ziqian Wu, Ming Gao, Youyang Feng
-* Project paper: 
+* Project paper: https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/original%20paper.pdf
+* Original paper: https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/original%20paper.pdf
 
 To view the dataset, click [here](https://github.com/chkzhao/Single-pass-Incremental-Clustering/blob/main/data.zip)
 
