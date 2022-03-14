@@ -1,0 +1,169 @@
+---
+title: "single_pass_incremental_clustering"
+author: "Chenkai Zhao"
+date: "2021/12/12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+theme_set(theme_bw()) # change the default ggplot theme to black-and-white
+
+knitr::opts_chunk$set(
+  echo=T, ## show your R code chunk
+  message = F, ## hide the message
+  warning = F, ## hide the warning
+  autodep = T ## make sure your separate code chunks can find the dependencies (from other code chunk)
+)
+```
+
+0.Library all needed packages and connect to the python code files.
+```{r}
+library(reticulate)
+library(aricode)
+library(DPBBM)
+
+library(dplyr)
+library(tidytext)
+library(ROCR) # for plotting roc
+library(e1071) # for NB and SVM
+library(rpart) # for decision tree
+library(ada) # for adaboost
+library(text2vec)
+library(tidyr)
+library(tm)
+library(lsa)
+library(data.table)
+library(magrittr)
+library(textstem)
+library(stringr)
+
+#source_python("final.py")
+source_python("single_pass_incremental_clustering.py")
+```
+
+1.Import the data and assign names to the columns.
+```{r}
+data_test <- read.table("upcoming-wsdm10.txt", head=FALSE, comment.char = "", quote = "", sep ="\t", fill=T, encoding = "UTF-8")
+
+colnames(data_test)<-c("author","title","description","takenDate","postedDate",
+                       "tags","location","geoData","eventID")
+
+dim(data_test)
+```
+
+2.Split the data into three parts: train, validation and test.
+```{r}
+split_dataset <- function(data,train_num,valid_num,test_num)
+{
+  data$id = 1:nrow(data)
+  setDT(data)
+  setkey(data,id)
+  set.seed(2017L)
+  all_ids = data$id
+  train_ids = all_ids[c(1:train_num)]
+  valid_ids = all_ids[c(train_num + 1 : train_num + valid_num)]
+  test_ids =  all_ids[c(train_num + valid_num + 1 :nrow(data))]
+  
+  train = data[J(train_ids)]
+  valid = data[J(valid_ids)]
+  test = data[J(test_ids)] 
+  return(list('train' = train,'valid' = valid,'test' = test))
+}
+
+data_splited = split_dataset(data_test,5000,5000,5000)
+train = data_splited$train
+validation = data_splited$valid
+test = data_splited$test
+dim(train)
+```
+
+3.Implement TFIDF algorithm and apply it to the text features in the dataset.
+```{r}
+TFIDF <- function(textal,id){
+  
+  prep_fun = function(x) {
+    # make text lower case
+    x = str_to_lower(x)
+    # remove non-alphanumeric symbols
+    x = str_replace_all(x, "[^[:alpha:]]", " ")
+    # collapse multiple spaces
+    x = str_replace_all(x, "\\s+", " ")
+    #stemming
+    x = stem_strings(x)
+  }
+  
+  tok_fun = word_tokenizer
+  
+  it_train = itoken(textal, 
+                    preprocessor = prep_fun, 
+                    tokenizer = tok_fun, 
+                    ids = id, 
+                    progressbar = FALSE)
+  
+  stopwords <- c(tm::stopwords("english"))
+  
+  vocab = create_vocabulary(it_train, stopwords = stopwords)
+  vocab = create_vocabulary(it_train)
+  
+  vectorizer = vocab_vectorizer(vocab)
+  t1 = Sys.time()
+  dtm_train = create_dtm(it_train, vectorizer)
+  print(difftime(Sys.time(), t1, units = 'sec'))
+  
+  
+  tfidf = TfIdf$new()
+  # fit model to train data and transform train data with fitted model
+  dtm_train_tfidf = fit_transform(dtm_train, tfidf)
+  return(as.matrix(dtm_train_tfidf)) 
+}
+
+title.train.tdidf = TDIDF(train$title, train$id)
+
+dim(title.train.tdidf)
+```
+
+4.Implement single-pass incremental clustering algorithm to text features.
+```{r}
+clusters_title <- fit_data_text(title.train.tdidf, 0.35)
+
+nmi_title <- NMI(clusters_title, train$eventID)
+nmi_title
+
+bcubed_title <- BCubed_metric(train$eventID,clusters_title, 0.5)
+bcubed_title
+```
+
+5.Implement single-pass incremental clustering algorithm to time feature(takenData).
+```{r}
+v4 = train$takenDate
+for (i in c(1:length(v4))) {
+  v4[i] = unclass(as.POSIXct(v4[i]))/60
+}
+v4 = as.numeric(v4)
+
+clusters_time <- fit_data_time(v4, 0.6)
+
+nmi_time <- NMI(clusters_time, train$eventID)
+nmi_time
+
+bcubed_time <- BCubed_metric(train$eventID,clusters_time, 0.5)
+bcubed_time
+```
+
+
+6.Implement single-pass incremental clustering algorithm to location feature(geoData).
+```{r}
+v8 <- train$geoData
+
+clusters_geo <- fit_data_location(v8, 0.3)
+
+nmi_geo <- NMI(clusters_geo, train$eventID)
+nmi_geo
+
+bcubed_geo <- BCubed_metric(train$eventID,clusters_geo, 0.5)
+bcubed_geo
+```
+
+
+
+
